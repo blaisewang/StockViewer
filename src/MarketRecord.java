@@ -1,12 +1,12 @@
-class Record {
+class MarketRecord {
     private String date;
     private double open;
     private double high;
     private double low;
     private double close;
-    private long volume;
+    private double volume;
 
-    Record(String date, double open, double high, double low, double close, long volume) {
+    MarketRecord(String date, double open, double high, double low, double close, double volume) {
         this.date = date;
         this.open = open;
         this.high = high;
@@ -35,7 +35,7 @@ class Record {
         return close;
     }
 
-    long getVolume() {
+    double getVolume() {
         return volume;
     }
 

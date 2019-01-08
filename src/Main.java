@@ -31,7 +31,7 @@ public class Main extends Application {
 
     public static void main(String[] args) throws IOException {
 
-        URL url = new URL("https://quotes.wsj.com/AAPL/historical-prices/download?MOD_VIEW=page&num_rows=300&startDate=01/01/2018&endDate=12/31/2018");
+        URL url = new URL("https://quotes.wsj.com/AAPL/historical-prices/download?MOD_VIEW=page&num_rows=300&startDate=12/10/2018&endDate=01/07/2019");
         URLConnection connection = url.openConnection();
         // check to make sure the page exists
         HttpURLConnection htCon = (HttpURLConnection) connection;
