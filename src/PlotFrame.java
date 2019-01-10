@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 public class PlotFrame extends JFrame {
 
-    private PlotFrame() throws IOException {
-        List<MarketRecord> list = parseCSVFile("APPL.csv");
+    PlotFrame(String title, String filePath) throws IOException {
+        List<MarketRecord> list = parseCSVFile(filePath);
         Collections.reverse(list);
 
         ArrayList<String> dateList = list.stream().map(MarketRecord::getDate).collect(Collectors.toCollection(ArrayList::new));
@@ -20,7 +20,7 @@ public class PlotFrame extends JFrame {
         ArrayList<Double> closeList = list.stream().map(MarketRecord::getClose).collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Double> volumeList = list.stream().map(MarketRecord::getVolume).collect(Collectors.toCollection(ArrayList::new));
 
-        setTitle("A simple JFrame with content");
+        setTitle(title);
 
         GridLayout gridLayout = new GridLayout(2, 2);
         setLayout(gridLayout);
@@ -58,26 +58,6 @@ public class PlotFrame extends JFrame {
         return new MarketRecord(date, open, high, low, close, volume);
     };
 
-    public static void main(String[] args) throws IOException {
-        int preferredWidth = 1400;
-        int preferredHeight = 900;
-
-        JFrame frame = new PlotFrame();
-
-        // first set the size
-        frame.setSize(preferredWidth, preferredHeight);
-
-        Dimension actualSize = frame.getContentPane().getSize();
-
-        int extraWidth = preferredWidth - actualSize.width;
-        int extraHeight = preferredHeight - actualSize.height;
-
-        frame.setSize(preferredWidth + extraWidth, preferredHeight + extraHeight);
-
-        frame.pack();
-        frame.setResizable(false);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+    public static void main(String[] args) {
     }
 }

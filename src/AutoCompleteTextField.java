@@ -8,63 +8,68 @@ import java.util.*;
 
 class AutoCompleteTextField extends TextField {
 
-    private ContextMenu entriesPopup;
+    private ContextMenu entriesContextMenu;
 
-    AutoCompleteTextField(SortedMap<String, String> candidateList) {
+    AutoCompleteTextField(SortedMap<String, String> generalMap) {
+
         super();
-        this.entriesPopup = new ContextMenu();
+        this.entriesContextMenu = new ContextMenu();
 
         textProperty().addListener((observable, oldValue, newValue) -> {
-            String enteredText = getText();
 
-            if (enteredText == null || enteredText.isEmpty()) {
-                entriesPopup.hide();
+            String prefix = getText();
+
+            if (prefix == null || prefix.isEmpty()) {
+                entriesContextMenu.hide();
             } else {
-                String prefix = newValue.toUpperCase();
-                SortedMap<String, String> filtered = filterPrefix(candidateList, prefix);
 
-                if (!filtered.isEmpty()) {
-                    populatePopUp(filtered);
+                prefix = prefix.toUpperCase();
+                SortedMap<String, String> filteredMap = filterPrefix(generalMap, prefix);
 
-                    if (!entriesPopup.isShowing()) {
-                        entriesPopup.show(this, Side.BOTTOM, 0, 0);
+                if (!filteredMap.isEmpty()) {
+                    populatePopUp(filteredMap);
+                    if (!entriesContextMenu.isShowing()) {
+                        entriesContextMenu.show(this, Side.BOTTOM, 0, 0);
                     }
-
                 } else {
-                    entriesPopup.hide();
+                    entriesContextMenu.hide();
                 }
-
             }
         });
 
-        focusedProperty().addListener((observableValue, oldValue, newValue) -> entriesPopup.hide());
+        focusedProperty().addListener((observableValue, oldValue, newValue) -> entriesContextMenu.hide());
     }
 
-    private void populatePopUp(SortedMap<String, String> results) {
-        int maxEntries = Math.min(results.size(), 10);
+    private void populatePopUp(SortedMap<String, String> resultMap) {
+
+        int maxEntries = Math.min(resultMap.size(), 10);
         List<CustomMenuItem> menuItems = new LinkedList<>();
 
-        for (Map.Entry<String, String> entry : results.entrySet()) {
-            final String result = entry.getValue();
+        for (Map.Entry<String, String> entry : resultMap.entrySet()) {
+
+            String result = entry.getValue();
             CustomMenuItem item = new CustomMenuItem(new Label(result), true);
             item.setOnAction(actionEvent -> {
                 setText(result);
-                entriesPopup.hide();
+                entriesContextMenu.hide();
             });
             menuItems.add(item);
 
             if (menuItems.size() >= maxEntries) {
                 break;
             }
+
         }
-        entriesPopup.getItems().clear();
-        entriesPopup.getItems().addAll(menuItems);
+
+        entriesContextMenu.getItems().clear();
+        entriesContextMenu.getItems().addAll(menuItems);
+
     }
 
-    private static SortedMap<String, String> filterPrefix(SortedMap<String, String> baseMap, String prefix) {
+    private static SortedMap<String, String> filterPrefix(SortedMap<String, String> generalMap, String prefix) {
         char nextLetter = (char) (prefix.charAt(prefix.length() - 1) + 1);
-        String end = prefix.substring(0, prefix.length() - 1) + nextLetter;
-        return baseMap.subMap(prefix, end);
+        String endPoint = prefix.substring(0, prefix.length() - 1) + nextLetter;
+        return generalMap.subMap(prefix, endPoint);
     }
 
 }
