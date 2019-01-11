@@ -49,6 +49,7 @@ class AutoCompleteTextField extends TextField {
 
             String result = entry.getValue();
             CustomMenuItem item = new CustomMenuItem(new Label(result), true);
+
             item.setOnAction(actionEvent -> {
                 setText(result);
                 entriesContextMenu.hide();

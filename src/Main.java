@@ -1,51 +1,44 @@
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.swing.*;
-import java.awt.*;
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.text.DateFormatSymbols;
+import java.io.IOException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class Main extends Application {
 
+    private final static int FRAME_WIDTH = 1440;
+    private final static int FRAME_HEIGHT = 900;
+
     private final static String SYMBOL_FILE_PATH = "nasdaq-listed-symbols.csv";
     private final static String SYMBOL_FILE_URL = "https://datahub.io/core/nasdaq-listings/r/nasdaq-listed-symbols.csv";
-
     private final static String STOCK_URL = "https://quotes.wsj.com/#/historical-prices/download?MOD_VIEW=page&num_rows=%&startDate=[&endDate=]";
 
     @Override
     public void start(Stage primaryStage) throws IOException {
 
-        File symbolFile = new File(SYMBOL_FILE_PATH);
         SortedMap<String, String> symbolMap = new TreeMap<>();
 
-        if (downloadFile(SYMBOL_FILE_URL, SYMBOL_FILE_PATH)) {
+        if (Util.downloadFile(SYMBOL_FILE_PATH, SYMBOL_FILE_URL)) {
 
-            InputStream symbolFileInputStream = new FileInputStream(symbolFile);
-            BufferedReader SymbolBufferedReader = new BufferedReader(new InputStreamReader(symbolFileInputStream));
+            ArrayList<String[]> symbolCollection = Util.parseCSVFile(SYMBOL_FILE_PATH);
 
-            SymbolBufferedReader.lines().skip(1).forEach((line) -> {
-
-                String[] symbolAndName = line.replace("\"", "").split(",");
-                symbolMap.put(symbolAndName[0], symbolAndName[0] + " - " + symbolAndName[1]);
-
+            symbolCollection.forEach(symbolAndName -> {
+                String symbol = symbolAndName[0];
+                String name = symbol + " - " + symbolAndName[1].replace("\"", "");
+                symbolMap.put(symbol, name);
             });
-            SymbolBufferedReader.close();
 
         } else {
 
@@ -79,41 +72,23 @@ public class Main extends Application {
         HBox hbox = new HBox(symbolSearchTextFiled, startDatePicker, endDatePicker, viewButton);
 
         Scene scene = new Scene(hbox, 600, 400);
+
         primaryStage.setScene(scene);
+
+        primaryStage.setOnCloseRequest(e -> {
+            Platform.exit();
+            System.exit(0);
+        });
+
         primaryStage.show();
 
     }
-
-    private boolean downloadFile(String url, String filePath) throws IOException {
-        URL symbolURL = new URL(url);
-        URLConnection symbolURLConnection = symbolURL.openConnection();
-        HttpsURLConnection symbolHttpsURLConnection = (HttpsURLConnection) symbolURLConnection;
-
-        if (symbolHttpsURLConnection.getResponseCode() == HttpsURLConnection.HTTP_OK) {
-            ReadableByteChannel symbolReadableByteChannel = Channels.newChannel(symbolURL.openStream());
-            FileOutputStream symbolFileOutputStream = new FileOutputStream(filePath);
-            symbolFileOutputStream.getChannel().transferFrom(symbolReadableByteChannel, 0, Long.MAX_VALUE);
-
-            return true;
-        }
-        return false;
-    }
-
-
-    private String getMonthAbbreviation(String month) {
-
-        DateFormatSymbols dateFormatSymbols = new DateFormatSymbols();
-        return dateFormatSymbols.getMonths()[Integer.parseInt(month) - 1].substring(0, 3).toUpperCase();
-
-    }
-
 
     private class DownloadTask implements Runnable {
 
         private String symbol;
         private LocalDate startDate;
         private LocalDate endDate;
-
 
         DownloadTask(String symbolAndName, LocalDate startDate, LocalDate endDate) {
             this.symbol = symbolAndName.split(" ")[0];
@@ -122,41 +97,25 @@ public class Main extends Application {
         }
 
         public void run() {
-            String[] startDateArray = startDate.toString().split("-");
-            String[] endDateArray = endDate.toString().split("-");
 
-            String startDay = startDateArray[2];
-            String startMonth = startDateArray[1];
-            String startYear = startDateArray[0];
+            DateTimeFormatter formatterUK = DateTimeFormatter.ofPattern("dd_MM_uuuu");
+            DateTimeFormatter formatterUS = DateTimeFormatter.ofPattern("MM/dd/uuuu");
 
-            String endDay = endDateArray[2];
-            String endMonth = endDateArray[1];
-            String endYear = endDateArray[0];
-
-            String startDateUS = startMonth + "/" + startDay + "/" + startYear;
-            String endDateUS = endMonth + "/" + endDay + "/" + endYear;
-
-            String startDateUK = startDay + getMonthAbbreviation(startMonth) + startYear.substring(2, 4);
-            String endDateUK = endDay + getMonthAbbreviation(endMonth) + endYear.substring(2, 4);
-
-            Long maxRowNumber = ChronoUnit.DAYS.between(startDate, endDate);
-
-            String title = symbol + "  " + startDateUK + "  -  " + endDateUK;
+            String startDateUK = startDate.format(formatterUK);
+            String endDateUK = endDate.format(formatterUK);
 
             String url = STOCK_URL
                     .replace("#", symbol)
-                    .replace("%", Long.toString(maxRowNumber))
-                    .replace("[", startDateUS)
-                    .replace("]", endDateUS);
+                    .replace("%", Long.toString(ChronoUnit.DAYS.between(startDate, endDate)))
+                    .replace("[", startDate.format(formatterUS))
+                    .replace("]", endDate.format(formatterUS));
 
             String filePath = symbol + "_" + startDateUK + "_" + endDateUK + ".csv";
-
-            System.out.println(url);
-            System.out.println(filePath);
+            String frameTitle = (symbol + " " + startDateUK + " to " + endDateUK).replace('_', '/');
 
             try {
-                if (downloadFile(url, filePath)) {
-                    Thread downloadThread = new Thread(new PlottingTask(title, filePath));
+                if (Util.downloadFile(filePath, url)) {
+                    Thread downloadThread = new Thread(new PlottingTask(filePath, frameTitle));
                     downloadThread.start();
                 }
             } catch (IOException e) {
@@ -167,36 +126,17 @@ public class Main extends Application {
 
     private class PlottingTask implements Runnable {
 
-        private String title;
         private String filePath;
+        private String frameTitle;
 
-        PlottingTask(String title, String filePath) {
-            this.title = title;
+        PlottingTask(String filePath, String frameTitle) {
             this.filePath = filePath;
+            this.frameTitle = frameTitle;
         }
 
         public void run() {
-            int preferredWidth = 1400;
-            int preferredHeight = 900;
-
             try {
-                JFrame frame = new PlotFrame(title, filePath);
-
-                frame.setSize(preferredWidth, preferredHeight);
-
-                Dimension actualSize = frame.getContentPane().getSize();
-
-                int extraWidth = preferredWidth - actualSize.width;
-                int extraHeight = preferredHeight - actualSize.height;
-
-                frame.setSize(preferredWidth + extraWidth, preferredHeight + extraHeight);
-
-                frame.pack();
-                frame.setResizable(false);
-                frame.setLocationRelativeTo(null);
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setVisible(true);
-
+                new DataParser(filePath, frameTitle, FRAME_WIDTH, FRAME_HEIGHT);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -204,6 +144,7 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+
         Application.launch(args);
 
     }
