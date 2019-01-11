@@ -77,8 +77,8 @@ class DataParser {
         double max = high.stream().mapToDouble(v -> v).max().orElse(0);
         double min = low.stream().mapToDouble(v -> v).min().orElse(0);
 
-        double maxRange = Math.ceil(max * 1.05 / 5) * 5;
-        double minRange = Math.floor(min * 0.95 / 5) * 5;
+        double maxRange = Math.ceil(max * 1.1 / 5) * 5;
+        double minRange = Math.floor(min * 0.9 / 5) * 5;
 
         return new double[]{minRange, maxRange};
 

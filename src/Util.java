@@ -13,14 +13,14 @@ class Util {
     private static DecimalFormat oneDecimalFormatter = new DecimalFormat("#,###.0");
     private static DecimalFormat twoDecimalFormatter = new DecimalFormat("#,###.00");
 
-    static String toFormattedNumberString(double number) {
+    static String toFormattedNumberString(double value) {
 
-        if (number % 1 == 0) {
-            return integerFormatter.format(number);
-        } else if (number % 0.5 == 0) {
-            return oneDecimalFormatter.format(number);
+        if (value % 1 == 0) {
+            return integerFormatter.format(value);
+        } else if (value % 0.5 == 0) {
+            return oneDecimalFormatter.format(value);
         }
-        return twoDecimalFormatter.format(number);
+        return twoDecimalFormatter.format(value);
 
     }
 

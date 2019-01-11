@@ -91,9 +91,11 @@ public class Main extends Application {
         private LocalDate endDate;
 
         DownloadTask(String symbolAndName, LocalDate startDate, LocalDate endDate) {
-            this.symbol = symbolAndName.split(" ")[0];
+
+            this.symbol = symbolAndName.split(" ")[0].toUpperCase();
             this.startDate = startDate;
             this.endDate = endDate;
+
         }
 
         public void run() {
