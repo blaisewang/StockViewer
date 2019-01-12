@@ -26,13 +26,14 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 
-public class Main extends Application {
+public class MarketGUI extends Application {
 
     private static final int SHAKING_CYCLE = 3;
     private static final double SHAKING_DURATION = 0.08;
 
     private static final LocalDate today = LocalDate.now();
-    private SortedMap<String, String> symbolMap = new TreeMap<>();
+
+    private static SortedMap<String, String> symbolMap;
 
     private static final String SYMBOL_FILE_PATH = "nasdaq-listed-symbols.csv";
     private static final String SYMBOL_FILE_URL = "https://datahub.io/core/nasdaq-listings/r/nasdaq-listed-symbols.csv";
@@ -43,6 +44,8 @@ public class Main extends Application {
 
         initialise();
 
+        symbolMap = new TreeMap<>();
+
         GridPane gridPane = new GridPane();
         gridPane.setHgap(4);
         gridPane.setVgap(4);
@@ -51,7 +54,7 @@ public class Main extends Application {
         Insets textMargin = new Insets(0, 10, 3, 12);
         Insets fieldMargin = new Insets(0, 10, 3, 10);
 
-        Text symbolHintText = new Text("Stock Symbol");
+        Text symbolHintText = new Text("Ticker Symbol");
         GridPane.setMargin(symbolHintText, textMargin);
         gridPane.add(symbolHintText, 0, 0);
 
@@ -90,12 +93,13 @@ public class Main extends Application {
 
         Button retrieveButton = new Button("Retrieve");
         retrieveButton.setOnAction(e -> {
+
             String symbol = symbolSearchTextFiled.getText().split(" ")[0].toUpperCase();
             LocalDate startDate = startDatePicker.getValue();
             LocalDate endDate = endDatePicker.getValue();
 
             if (symbol.length() == 0) {
-                errorHintLabel.setText("EMPTY STOCK SYMBOL");
+                errorHintLabel.setText("EMPTY TICKER SYMBOL");
                 shakeStage(primaryStage);
             } else if (!symbolMap.containsKey(symbol)) {
                 errorHintLabel.setText("NOT FOUND ON NASDAQ");

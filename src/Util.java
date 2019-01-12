@@ -15,6 +15,7 @@ class Util {
 
     private static DecimalFormat integerFormatter = new DecimalFormat("#,###");
     private static DecimalFormat DecimalFormatter = new DecimalFormat("#,###.00");
+
     private static final String[] SHORT_MONTH_ARRAY = new DateFormatSymbols().getShortMonths();
 
     static String getShortMonth(String month) {
@@ -56,17 +57,17 @@ class Util {
 
     }
 
-    static boolean downloadFile(String filePath, String url) throws IOException {
+    static boolean downloadFile(String filePath, String webAddress) throws IOException {
 
-        URL symbolURL = new URL(url);
-        URLConnection symbolURLConnection = symbolURL.openConnection();
-        HttpsURLConnection symbolHttpsURLConnection = (HttpsURLConnection) symbolURLConnection;
+        URL url = new URL(webAddress);
+        URLConnection urlConnection = url.openConnection();
+        HttpsURLConnection httpsURLConnection = (HttpsURLConnection) urlConnection;
 
-        if (symbolHttpsURLConnection.getResponseCode() == HttpsURLConnection.HTTP_OK) {
+        if (httpsURLConnection.getResponseCode() == HttpsURLConnection.HTTP_OK) {
 
-            ReadableByteChannel symbolReadableByteChannel = Channels.newChannel(symbolURL.openStream());
-            FileOutputStream symbolFileOutputStream = new FileOutputStream(filePath);
-            symbolFileOutputStream.getChannel().transferFrom(symbolReadableByteChannel, 0, Long.MAX_VALUE);
+            ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
+            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+            fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
             return true;
         }
@@ -78,10 +79,10 @@ class Util {
 
         List<List<String>> collection = new ArrayList<>();
 
-        InputStream inputStream = new FileInputStream(new File(filePath));
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        InputStream fileInputStream = new FileInputStream(new File(filePath));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));
 
-        bufferedReader.lines().skip(1).forEach((line) -> collection.add(Arrays.asList(line.split(","))));
+        bufferedReader.lines().skip(1).forEach((l) -> collection.add(Arrays.asList(l.split(","))));
         bufferedReader.close();
 
         return collection;

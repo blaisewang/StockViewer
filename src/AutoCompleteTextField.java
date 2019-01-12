@@ -9,19 +9,19 @@ import java.util.*;
 
 class AutoCompleteTextField extends TextField {
 
-    private ContextMenu entriesContextMenu;
+    private ContextMenu contextMenu;
 
     AutoCompleteTextField(SortedMap<String, String> generalMap) {
 
         super();
-        this.entriesContextMenu = new ContextMenu();
+        this.contextMenu = new ContextMenu();
 
         textProperty().addListener((observable, oldValue, newValue) -> {
 
             String prefix = getText();
 
             if (prefix == null || prefix.isEmpty()) {
-                entriesContextMenu.hide();
+                contextMenu.hide();
             } else {
 
                 prefix = prefix.toUpperCase();
@@ -31,22 +31,22 @@ class AutoCompleteTextField extends TextField {
 
                     populatePopUp(filteredMap);
 
-                    if (!entriesContextMenu.isShowing()) {
+                    if (!contextMenu.isShowing()) {
 
-                        entriesContextMenu.show(this, Side.BOTTOM, 0, 0);
+                        contextMenu.show(this, Side.BOTTOM, 0, 0);
 
                     }
 
                 } else {
 
-                    entriesContextMenu.hide();
+                    contextMenu.hide();
 
                 }
 
             }
         });
 
-        focusedProperty().addListener((observableValue, oldValue, newValue) -> entriesContextMenu.hide());
+        focusedProperty().addListener((observableValue, oldValue, newValue) -> contextMenu.hide());
     }
 
     private void populatePopUp(SortedMap<String, String> resultMap) {
@@ -62,7 +62,7 @@ class AutoCompleteTextField extends TextField {
             item.setOnAction(actionEvent -> {
 
                 setText(result);
-                entriesContextMenu.hide();
+                contextMenu.hide();
 
             });
             menuItems.add(item);
@@ -75,8 +75,8 @@ class AutoCompleteTextField extends TextField {
 
         }
 
-        entriesContextMenu.getItems().clear();
-        entriesContextMenu.getItems().addAll(menuItems);
+        contextMenu.getItems().clear();
+        contextMenu.getItems().addAll(menuItems);
 
     }
 

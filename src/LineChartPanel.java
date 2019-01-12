@@ -9,12 +9,12 @@ import java.util.List;
 
 public class LineChartPanel extends JPanel implements MouseMotionListener {
 
-    private String title;
+    private String caption;
 
     private int recordSize;
     private List<String> records;
 
-    private DataRange dataRange;
+    private Range range;
 
     private int mouseX = 0;
     private int mouseY = 0;
@@ -28,13 +28,15 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     private static final int AXIS_NUMBER = 5;
     private static final int AXIS_OFFSET = 5;
-    private static final int TITLE_OFFSET = 20;
     private static final int CIRCLE_RADIUS = 6;
+    private static final int CAPTION_OFFSET = 20;
 
     private static final int TOP_MARGIN = 90;
-    private static final int BOTTOM_MARGIN = 50;
     private static final int LEFT_MARGIN = 65;
     private static final int RIGHT_MARGIN = 35;
+    private static final int BOTTOM_MARGIN = 50;
+
+    private static final String FONT_NAME = "Lucida Console";
 
     private static final Color BORDER_COLOR = new Color(222, 222, 222);
     private static final Color DARK_GREY = new Color(158, 158, 158);
@@ -42,30 +44,38 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
     private static final Color DARK_BLUE = new Color(57, 119, 175);
     private static final Color DARK_ORANGE = new Color(239, 113, 54);
 
-    LineChartPanel(String title, List<Double> scaled, DataRange dataRange, List<String> records) {
+    LineChartPanel(String caption, List<Double> scaled, Range range, List<String> records) {
 
         super.addMouseMotionListener(this);
-        initialise(title, scaled, null, dataRange, records);
+        initialise(caption, scaled, null, range, records);
 
     }
 
-    LineChartPanel(String title, List<Double> highScaled, List<Double> lowScaled, DataRange dataRange, List<String> records) {
+    LineChartPanel(String caption,
+                   List<Double> highScaled,
+                   List<Double> lowScaled,
+                   Range range,
+                   List<String> records) {
 
         super.addMouseMotionListener(this);
-        initialise(title, highScaled, lowScaled, dataRange, records);
+        initialise(caption, highScaled, lowScaled, range, records);
 
     }
 
-    private void initialise(String title, List<Double> highScaled, List<Double> lowScaled, DataRange dataRange, List<String> records) {
+    private void initialise(String caption,
+                            List<Double> highScaled,
+                            List<Double> lowScaled,
+                            Range range,
+                            List<String> records) {
 
         super.setBackground(Color.white);
         super.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
 
-        this.title = title;
+        this.caption = caption;
         this.highScaled = highScaled;
         this.lowScaled = lowScaled;
+        this.range = range;
         this.records = records;
-        this.dataRange = dataRange;
         this.recordSize = records.size();
 
         this.xPoints = new int[recordSize];
@@ -84,7 +94,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
         initialise(g2d);
 
-        drawTitle(g2d);
+        drawCaption(g2d);
 
         int axisStep = lineChartHeight / (AXIS_NUMBER - 1);
         int axisX1 = LEFT_MARGIN - AXIS_OFFSET;
@@ -117,7 +127,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
             drawLegend(g2d);
         }
 
-        int[] steps = new int[]{0, recordSize / 4, recordSize / 2, (int) (recordSize / 4d * 3), recordSize - 1};
+        int[] steps = new int[]{0, recordSize / 4, recordSize / 2, (int) (recordSize * 0.75), recordSize - 1};
 
         for (int step : steps) {
             int x = xPoints[step];
@@ -183,16 +193,18 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     }
 
-    private void drawTitle(Graphics2D g2d) {
+    private void drawCaption(Graphics2D g2d) {
 
         g2d.setColor(Color.black);
-        g2d.setFont(new Font("Lucida Console", Font.PLAIN, 16));
+        g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 16));
 
         FontMetrics fontMetrics = g2d.getFontMetrics();
-        Rectangle2D titleBounds = fontMetrics.getStringBounds(title, g2d);
+        Rectangle2D captionBounds = fontMetrics.getStringBounds(caption, g2d);
 
         int yFontOffset = fontMetrics.getAscent();
-        g2d.drawString(title, (int) (getWidth() - titleBounds.getWidth()) / 2, yFontOffset + TITLE_OFFSET);
+        int x = (int) (getWidth() - captionBounds.getWidth()) / 2;
+        int y = yFontOffset + CAPTION_OFFSET;
+        g2d.drawString(caption, x, y);
 
     }
 
@@ -205,7 +217,8 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         g2d.setColor(LIGHT_GREY);
         g2d.setStroke(new BasicStroke(1));
         for (int i = 1; i < AXIS_NUMBER; i++) {
-            g2d.drawLine(axisX1, axisY - axisStep * i, axisX2, axisY - axisStep * i);
+            int y = axisY - axisStep * i;
+            g2d.drawLine(axisX1, y, axisX2, y);
         }
 
     }
@@ -228,7 +241,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     private void drawLegend(Graphics2D g2d) {
 
-        g2d.setFont(new Font("Lucida Console", Font.PLAIN, 13));
+        g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 13));
         FontMetrics fontMetrics = g2d.getFontMetrics();
         Rectangle2D legendBounds = fontMetrics.getStringBounds("High", g2d);
 
@@ -236,7 +249,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         int rectHeight = CIRCLE_RADIUS * 7;
 
         int rectX = getWidth() - RIGHT_MARGIN - rectWidth;
-        int rectY = TITLE_OFFSET / 2 - 3;
+        int rectY = CAPTION_OFFSET / 2 - 3;
 
         g2d.setColor(LIGHT_GREY);
         g2d.setStroke(new BasicStroke(1));
@@ -262,28 +275,32 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
         g2d.setColor(DARK_GREY);
         g2d.setStroke(new BasicStroke(2));
-        g2d.setFont(new Font("Lucida Console", Font.PLAIN, 10));
+        g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 10));
         FontMetrics fontMetrics = g2d.getFontMetrics();
         Rectangle2D labelBounds = fontMetrics.getStringBounds(label, g2d);
 
         int yOffset = 5;
         g2d.drawLine(x, y, x, y + yOffset);
-        g2d.drawString(label, x - (int) (labelBounds.getWidth() / 2), y + fontMetrics.getAscent() + yOffset);
+
+        x -= (int) (labelBounds.getWidth() / 2);
+        y += fontMetrics.getAscent() + yOffset;
+        g2d.drawString(label, x, y);
 
     }
 
     private void drawYAxisLabels(Graphics2D g2d, int yStep, int x, int y) {
 
         g2d.setColor(DARK_GREY);
-        g2d.setFont(new Font("Lucida Console", Font.PLAIN, 10));
+        g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 10));
 
         FontMetrics fontMetrics = g2d.getFontMetrics();
 
-        double rangeStep = dataRange.getRange() / (AXIS_NUMBER - 1);
+        double rangeStep = range.getRange() / (AXIS_NUMBER - 1);
 
         for (int i = 0; i < AXIS_NUMBER; i++) {
 
-            String label = Util.toFormattedNumberString(dataRange.getMinRange() + i * rangeStep, dataRange.getMinRange());
+            double value = range.getMin() + i * rangeStep;
+            String label = Util.toFormattedNumberString(value, range.getMin());
             Rectangle2D labelBounds = fontMetrics.getStringBounds(label, g2d);
 
             int tx = x - (int) labelBounds.getWidth() - AXIS_OFFSET;
@@ -296,15 +313,19 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     private void drawCircle(Graphics2D g2d, int x, int y, Color color) {
 
+        x -= CIRCLE_RADIUS;
+        y -= CIRCLE_RADIUS;
+        int diameter = CIRCLE_RADIUS * 2;
+
         g2d.setColor(color);
-        Ellipse2D.Double ellipse = new Ellipse2D.Double(x - CIRCLE_RADIUS, y - CIRCLE_RADIUS, 2 * CIRCLE_RADIUS, 2 * CIRCLE_RADIUS);
+        Ellipse2D.Double ellipse = new Ellipse2D.Double(x, y, diameter, diameter);
         g2d.fill(ellipse);
 
     }
 
     private void drawRecordRectangle(Graphics2D g2d, String record, int x) {
 
-        g2d.setFont(new Font("Lucida Console", Font.PLAIN, 13));
+        g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 13));
         FontMetrics fontMetrics = g2d.getFontMetrics();
         Rectangle2D recordBounds = fontMetrics.getStringBounds(record, g2d);
 
@@ -335,7 +356,9 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         g2d.drawRect(tx, ty, recordBoundWidth, recordBoundHeight);
 
         g2d.setColor(Color.black);
-        g2d.drawString(record, tx + xOffset / 2, ty + yOffset / 2 + fontMetrics.getAscent());
+        tx += xOffset / 2;
+        ty += +yOffset / 2 + fontMetrics.getAscent();
+        g2d.drawString(record, tx, ty);
 
     }
 

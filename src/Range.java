@@ -1,20 +1,20 @@
-class DataRange {
+class Range {
 
     private final double max;
     private final double min;
     private final double range;
 
-    DataRange(double max, double min) {
+    Range(double max, double min) {
         this.max = max;
         this.min = min;
         this.range = max - min;
     }
 
-    double getMaxRange() {
+    double getMax() {
         return max;
     }
 
-    double getMinRange() {
+    double getMin() {
         return min;
     }
 
