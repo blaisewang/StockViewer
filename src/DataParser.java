@@ -1,120 +1,117 @@
 import java.io.IOException;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 class DataParser {
 
     private static int dataSize;
+    private static final String[] TITLE_ARRAY = {"OPEN", "CLOSE", "VOLUME", "HIGH & LOW"};
 
     DataParser(String filePath, String frameTitle, int frameWidth, int frameHeight) throws IOException {
 
-        ArrayList<String[]> recordCollection = Util.parseCSVFile(filePath);
+        List<List<String>> recordCollection = Util.parseCSVFile(filePath);
 
         dataSize = recordCollection.size();
-        Collections.reverse(recordCollection);
 
-        ArrayList<String> dateList = new ArrayList<>();
-        ArrayList<Double> openList = new ArrayList<>();
-        ArrayList<Double> highList = new ArrayList<>();
-        ArrayList<Double> lowList = new ArrayList<>();
-        ArrayList<Double> closeList = new ArrayList<>();
-        ArrayList<Double> volumeList = new ArrayList<>();
+        List<String> dateList = new ArrayList<>();
+        List<Double> openList = new ArrayList<>();
+        List<Double> highList = new ArrayList<>();
+        List<Double> lowList = new ArrayList<>();
+        List<Double> closeList = new ArrayList<>();
+        List<Double> volumeList = new ArrayList<>();
 
-        for (int i = 0; i < dataSize; i++) {
+        for (int i = dataSize - 1; i >= 0; i--) {
 
-            String[] date = recordCollection.get(i)[0].split("/");
-            dateList.add(date[1] + " " + getMonthAbbreviation(date[0]) + " " + date[2]);
+            String[] date = recordCollection.get(i).get(0).split("/");
+            dateList.add(date[1] + " " + Util.getUpperCaseShortMonth(date[0]) + " " + date[2]);
 
-            openList.add(Double.parseDouble(recordCollection.get(i)[1]));
-            highList.add(Double.parseDouble(recordCollection.get(i)[2]));
-            lowList.add(Double.parseDouble(recordCollection.get(i)[3]));
-            closeList.add(Double.parseDouble(recordCollection.get(i)[4]));
-            volumeList.add(Double.parseDouble(recordCollection.get(i)[5]));
+            openList.add(Double.parseDouble(recordCollection.get(i).get(1)));
+            highList.add(Double.parseDouble(recordCollection.get(i).get(2)));
+            lowList.add(Double.parseDouble(recordCollection.get(i).get(3)));
+            closeList.add(Double.parseDouble(recordCollection.get(i).get(4)));
+            volumeList.add(Double.parseDouble(recordCollection.get(i).get(5)));
+
         }
 
-        double[] openRange = getRangeList(openList);
-        double[] openScaled = getScaledData(openRange, openList);
-        ArrayList<String> openRecords = getRecords(dateList, openList);
-        LineChartPanel openPanel = new LineChartPanel("Open", openScaled, openRange, openRecords);
+        List<LineChartPanel> panelList = new ArrayList<>();
+        panelList.add(getLineChartPanel(TITLE_ARRAY[0], dateList, openList));
+        panelList.add(getLineChartPanel(TITLE_ARRAY[1], dateList, closeList));
+        panelList.add(getLineChartPanel(TITLE_ARRAY[2], dateList, volumeList));
+        panelList.add(getLineChartPanel(TITLE_ARRAY[3], dateList, highList, lowList));
 
-        double[] closeRange = getRangeList(closeList);
-        double[] closeScaled = getScaledData(closeRange, closeList);
-        ArrayList<String> closeRecords = getRecords(dateList, closeList);
-        LineChartPanel closePanel = new LineChartPanel("Close", closeScaled, closeRange, closeRecords);
-
-        double[] volumeRange = getRangeList(volumeList);
-        double[] volumeScaled = getScaledData(volumeRange, volumeList);
-        ArrayList<String> volumeRecords = getRecords(dateList, volumeList);
-        LineChartPanel volumePanel = new LineChartPanel("Volume", volumeScaled, volumeRange, volumeRecords);
-
-        double[] highLowRange = getRangeList(highList, lowList);
-        double[] highScaled = getScaledData(highLowRange, highList);
-        double[] lowScaled = getScaledData(highLowRange, lowList);
-        ArrayList<String> highLowRecords = getRecords(dateList, highList, lowList);
-        LineChartPanel highLowPanel = new LineChartPanel("High and Low", highScaled, lowScaled, highLowRange, highLowRecords);
-
-        PlotFrame plottingFrame = new PlotFrame(frameWidth, frameHeight, openPanel, closePanel, volumePanel, highLowPanel);
+        PlotFrame plottingFrame = new PlotFrame(frameWidth, frameHeight, panelList);
         plottingFrame.setTitle(frameTitle);
         plottingFrame.setVisible(true);
+
     }
 
-    private static String getMonthAbbreviation(String month) {
-        DateFormatSymbols dateFormatSymbols = new DateFormatSymbols();
-        return dateFormatSymbols.getMonths()[Integer.parseInt(month) - 1].substring(0, 3).toUpperCase();
+    private static LineChartPanel getLineChartPanel(String title, List<String> date, List<Double> data) {
+
+        DataRange dataRange = getDataRange(data);
+        List<Double> scaled = getScaledData(dataRange, data);
+        List<String> records = getRecords(date, data);
+
+        return new LineChartPanel(title, scaled, dataRange, records);
+
     }
 
-    private static double[] getRangeList(ArrayList<Double> data) {
+    private static LineChartPanel getLineChartPanel(String title, List<String> date, List<Double> high, List<Double> low) {
+
+        DataRange dataRange = getDataRange(high, low);
+        List<Double> highScaled = getScaledData(dataRange, high);
+        List<Double> lowScaled = getScaledData(dataRange, low);
+        List<String> records = getRecords(date, high, low);
+
+        return new LineChartPanel(title, highScaled, lowScaled, dataRange, records);
+
+    }
+
+    private static DataRange getDataRange(List<Double> data) {
         return getRange(data, data);
     }
 
-    private static double[] getRangeList(ArrayList<Double> high, ArrayList<Double> low) {
+    private static DataRange getDataRange(List<Double> high, List<Double> low) {
         return getRange(high, low);
     }
 
-    private static double[] getRange(ArrayList<Double> high, ArrayList<Double> low) {
+    private static DataRange getRange(List<Double> high, List<Double> low) {
 
-        double max = high.stream().mapToDouble(v -> v).max().orElse(0);
-        double min = low.stream().mapToDouble(v -> v).min().orElse(0);
+        double max = high.stream().max(Double::compareTo).orElse(0D);
+        double min = low.stream().min(Double::compareTo).orElse(0D);
 
         double maxRange = Math.ceil(max * 1.1 / 5) * 5;
         double minRange = Math.floor(min * 0.9 / 5) * 5;
 
-        return new double[]{minRange, maxRange};
+        return new DataRange(maxRange, minRange);
 
     }
 
-    private static double[] getScaledData(double[] range, ArrayList<Double> data) {
+    private static List<Double> getScaledData(DataRange dataRange, List<Double> data) {
 
-        double yRange = range[1] - range[0];
-        double[] yCoordinates = new double[dataSize];
-
-        for (int i = 0; i < dataSize; i++) {
-            yCoordinates[i] = ((range[1] - data.get(i)) / yRange);
-        }
-
-        return yCoordinates;
+        return data.stream().map(d -> (dataRange.getMaxRange() - d) / dataRange.getRange()).collect(Collectors.toList());
 
     }
 
-    private static ArrayList<String> getRecords(ArrayList<String> date, ArrayList<Double> data) {
+    private static List<String> getRecords(List<String> date, List<Double> data) {
 
-        ArrayList<String> records = new ArrayList<>();
+        List<String> records = new ArrayList<>();
         for (int i = 0; i < dataSize; i++) {
-            String price = Util.toFormattedNumberString(data.get(i));
-            records.add(price + " USD  " + date.get(i));
+            String formattedData = Util.toFormattedNumberString(data.get(i));
+            records.add(formattedData + "  " + date.get(i));
         }
         return records;
 
     }
 
-    private static ArrayList<String> getRecords(ArrayList<String> date, ArrayList<Double> high, ArrayList<Double> low) {
+    private static List<String> getRecords(List<String> date, List<Double> high, List<Double> low) {
 
-        ArrayList<String> records = new ArrayList<>();
+        List<String> records = new ArrayList<>();
         for (int i = 0; i < dataSize; i++) {
             String highPrice = Util.toFormattedNumberString(high.get(i));
             String lowPrice = Util.toFormattedNumberString(low.get(i));
-            records.add(highPrice + " USD  " + lowPrice + " USD  " + date.get(i));
+            records.add(highPrice + " " + lowPrice + "  " + date.get(i));
         }
         return records;
 

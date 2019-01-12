@@ -27,13 +27,21 @@ class AutoCompleteTextField extends TextField {
                 SortedMap<String, String> filteredMap = filterPrefix(generalMap, prefix);
 
                 if (!filteredMap.isEmpty()) {
+
                     populatePopUp(filteredMap);
+
                     if (!entriesContextMenu.isShowing()) {
+
                         entriesContextMenu.show(this, Side.BOTTOM, 0, 0);
+
                     }
+
                 } else {
+
                     entriesContextMenu.hide();
+
                 }
+
             }
         });
 
@@ -51,13 +59,17 @@ class AutoCompleteTextField extends TextField {
             CustomMenuItem item = new CustomMenuItem(new Label(result), true);
 
             item.setOnAction(actionEvent -> {
+
                 setText(result);
                 entriesContextMenu.hide();
+
             });
             menuItems.add(item);
 
             if (menuItems.size() >= maxEntries) {
+
                 break;
+
             }
 
         }
@@ -68,9 +80,11 @@ class AutoCompleteTextField extends TextField {
     }
 
     private static SortedMap<String, String> filterPrefix(SortedMap<String, String> generalMap, String prefix) {
+
         char nextLetter = (char) (prefix.charAt(prefix.length() - 1) + 1);
         String endPoint = prefix.substring(0, prefix.length() - 1) + nextLetter;
         return generalMap.subMap(prefix, endPoint);
+
     }
 
 }

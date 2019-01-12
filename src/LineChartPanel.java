@@ -4,17 +4,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
+import java.util.List;
+
 
 public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     private String title;
 
     private int recordSize;
-    private ArrayList<String> records;
+    private List<String> records;
 
-    private double max;
-    private double min;
+    private DataRange dataRange;
 
     private int mouseX = 0;
     private int mouseY = 0;
@@ -23,48 +23,49 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
     private int[] highYPoints;
     private int[] lowYPoints;
 
-    private double[] highScaled;
-    private double[] lowScaled;
+    private List<Double> highScaled;
+    private List<Double> lowScaled;
 
-    private static final int yAxisNumber = 5;
-    private static final int circleRadius = 6;
+    private static final int AXIS_NUMBER = 5;
+    private static final int AXIS_OFFSET = 5;
+    private static final int TITLE_OFFSET = 20;
+    private static final int CIRCLE_RADIUS = 6;
 
     private static final int TOP_MARGIN = 90;
     private static final int BOTTOM_MARGIN = 50;
     private static final int LEFT_MARGIN = 65;
     private static final int RIGHT_MARGIN = 35;
 
-    private Color borderColor = new Color(222, 222, 222);
-    private Color darkGrey = new Color(158, 158, 158);
-    private Color lightGrey = new Color(158, 158, 158, 200);
-    private Color darkBlue = new Color(57, 119, 175);
-    private Color darkOrange = new Color(239, 113, 54);
+    private static final Color BORDER_COLOR = new Color(222, 222, 222);
+    private static final Color DARK_GREY = new Color(158, 158, 158);
+    private static final Color LIGHT_GREY = new Color(158, 158, 158, 200);
+    private static final Color DARK_BLUE = new Color(57, 119, 175);
+    private static final Color DARK_ORANGE = new Color(239, 113, 54);
 
-    LineChartPanel(String title, double[] scaled, double[] range, ArrayList<String> records) {
+    LineChartPanel(String title, List<Double> scaled, DataRange dataRange, List<String> records) {
 
         super.addMouseMotionListener(this);
-        initialise(title, scaled, null, range, records);
+        initialise(title, scaled, null, dataRange, records);
 
     }
 
-    LineChartPanel(String title, double[] highScaled, double[] lowScaled, double[] range, ArrayList<String> records) {
+    LineChartPanel(String title, List<Double> highScaled, List<Double> lowScaled, DataRange dataRange, List<String> records) {
 
         super.addMouseMotionListener(this);
-        initialise(title, highScaled, lowScaled, range, records);
+        initialise(title, highScaled, lowScaled, dataRange, records);
 
     }
 
-    private void initialise(String title, double[] highScaled, double[] lowScaled, double[] range, ArrayList<String> records) {
+    private void initialise(String title, List<Double> highScaled, List<Double> lowScaled, DataRange dataRange, List<String> records) {
 
         super.setBackground(Color.white);
-        super.setBorder(BorderFactory.createLineBorder(borderColor, 1));
+        super.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
 
         this.title = title;
         this.highScaled = highScaled;
         this.lowScaled = lowScaled;
         this.records = records;
-        this.max = range[1];
-        this.min = range[0];
+        this.dataRange = dataRange;
         this.recordSize = records.size();
 
         this.xPoints = new int[recordSize];
@@ -78,59 +79,53 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.setRenderingHints(new RenderingHints(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON)
-        );
-        g2d.setRenderingHints(new RenderingHints(
-                RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
-        );
+        int lineChartWidth = getWidth() - LEFT_MARGIN - RIGHT_MARGIN;
+        int lineChartHeight = getHeight() - TOP_MARGIN - BOTTOM_MARGIN;
 
-        int chartWidth = getWidth() - LEFT_MARGIN - RIGHT_MARGIN;
-        int chartHeight = getHeight() - TOP_MARGIN - BOTTOM_MARGIN;
+        initialise(g2d);
 
         drawTitle(g2d);
 
-        int offset = 5;
-        int axisStep = chartHeight / (yAxisNumber - 1);
-        int axisX1 = LEFT_MARGIN - offset;
-        int axisX2 = getWidth() - RIGHT_MARGIN + offset;
+        int axisStep = lineChartHeight / (AXIS_NUMBER - 1);
+        int axisX1 = LEFT_MARGIN - AXIS_OFFSET;
+        int axisX2 = getWidth() - RIGHT_MARGIN + AXIS_OFFSET;
         int axisY = getHeight() - BOTTOM_MARGIN;
 
         drawAxis(g2d, axisStep, axisX1, axisX2, axisY);
 
-        drawYLabels(g2d, axisStep, axisX1, axisY);
+        drawYAxisLabels(g2d, axisStep, axisX1, axisY);
 
         if (recordSize == 0) {
             return;
         }
 
-        double xStep = chartWidth / ((double) recordSize + 1);
+        double xStep = lineChartWidth / ((double) recordSize + 1);
 
         for (int i = 1; i < recordSize + 1; i++) {
             xPoints[i - 1] = (int) (LEFT_MARGIN + i * xStep);
-            highYPoints[i - 1] = (int) (highScaled[i - 1] * chartHeight) + TOP_MARGIN;
+            highYPoints[i - 1] = (int) (highScaled.get(i - 1) * lineChartHeight) + TOP_MARGIN;
         }
 
-        drawPolyLine(g2d, xPoints, highYPoints, darkBlue);
+        drawPolyLine(g2d, xPoints, highYPoints, DARK_BLUE);
 
         if (lowScaled != null) {
+
             for (int i = 0; i < recordSize; i++) {
-                lowYPoints[i] = (int) (lowScaled[i] * chartHeight) + TOP_MARGIN;
+                lowYPoints[i] = (int) (lowScaled.get(i) * lineChartHeight) + TOP_MARGIN;
             }
-            drawPolyLine(g2d, xPoints, lowYPoints, darkOrange);
+            drawPolyLine(g2d, xPoints, lowYPoints, DARK_ORANGE);
+            drawLegend(g2d);
         }
 
-        int[] steps = new int[]{0, recordSize / 4, recordSize / 2, recordSize / 4 * 3, recordSize - 1};
+        int[] steps = new int[]{0, recordSize / 4, recordSize / 2, (int) (recordSize / 4d * 3), recordSize - 1};
 
         for (int step : steps) {
             int x = xPoints[step];
 
-            String[] labelData = records.get(step).split("USD {2}");
+            String[] labelData = records.get(step).split(" {2}");
             String label = labelData[labelData.length - 1];
 
-            drawXLabels(g2d, label, x, axisY);
+            drawXAxisLabels(g2d, label, x, axisY);
         }
 
         int index = (int) Math.round((mouseX - LEFT_MARGIN) / xStep) - 1;
@@ -140,11 +135,11 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
             int x = xPoints[index];
             int y = highYPoints[index];
 
-            drawCircle(g2d, x, y, darkBlue);
+            drawCircle(g2d, x, y, DARK_BLUE);
 
             if (lowScaled != null) {
                 y = lowYPoints[index];
-                drawCircle(g2d, x, y, darkOrange);
+                drawCircle(g2d, x, y, DARK_ORANGE);
             }
 
             drawRecordRectangle(g2d, records.get(index), x);
@@ -152,6 +147,39 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         }
     }
 
+    private void initialise(Graphics2D g2d) {
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON));
+
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_ALPHA_INTERPOLATION,
+                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY));
+
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_COLOR_RENDERING,
+                RenderingHints.VALUE_COLOR_RENDER_QUALITY));
+
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_FRACTIONALMETRICS,
+                RenderingHints.VALUE_FRACTIONALMETRICS_ON));
+
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BICUBIC));
+
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY));
+
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_NORMALIZE));
+
+        g2d.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+    }
 
     private void drawTitle(Graphics2D g2d) {
 
@@ -162,19 +190,19 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         Rectangle2D titleBounds = fontMetrics.getStringBounds(title, g2d);
 
         int yFontOffset = fontMetrics.getAscent();
-        g2d.drawString(title, (int) (getWidth() - titleBounds.getWidth()) / 2, 20 + yFontOffset);
+        g2d.drawString(title, (int) (getWidth() - titleBounds.getWidth()) / 2, yFontOffset + TITLE_OFFSET);
 
     }
 
     private void drawAxis(Graphics2D g2d, int axisStep, int axisX1, int axisX2, int axisY) {
 
-        g2d.setColor(darkGrey);
+        g2d.setColor(DARK_GREY);
         g2d.setStroke(new BasicStroke(2));
         g2d.drawLine(axisX1, axisY, axisX2, axisY);
 
-        g2d.setColor(lightGrey);
+        g2d.setColor(LIGHT_GREY);
         g2d.setStroke(new BasicStroke(1));
-        for (int i = 1; i < yAxisNumber; i++) {
+        for (int i = 1; i < AXIS_NUMBER; i++) {
             g2d.drawLine(axisX1, axisY - axisStep * i, axisX2, axisY - axisStep * i);
         }
 
@@ -196,9 +224,42 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     }
 
-    private void drawXLabels(Graphics2D g2d, String label, int x, int y) {
+    private void drawLegend(Graphics2D g2d) {
 
-        g2d.setColor(darkGrey);
+        g2d.setFont(new Font("Lucida Console", Font.PLAIN, 13));
+        FontMetrics fontMetrics = g2d.getFontMetrics();
+        Rectangle2D legendBounds = fontMetrics.getStringBounds("High", g2d);
+
+        int rectWidth = (int) legendBounds.getWidth() + CIRCLE_RADIUS * 7;
+        int rectHeight = CIRCLE_RADIUS * 7;
+
+        int rectX = getWidth() - RIGHT_MARGIN - rectWidth;
+        int rectY = TITLE_OFFSET / 2 - 3;
+
+        g2d.setColor(LIGHT_GREY);
+        g2d.setStroke(new BasicStroke(1));
+        g2d.drawRect(rectX, rectY, rectWidth, rectHeight);
+
+        int step = 3 * CIRCLE_RADIUS;
+        int circleX = (int) (rectX + CIRCLE_RADIUS * 2.5);
+        int circleY = rectY + CIRCLE_RADIUS * 2;
+
+        drawCircle(g2d, circleX, circleY, DARK_BLUE);
+        drawCircle(g2d, circleX, circleY + step, DARK_ORANGE);
+
+        int textX = circleX + CIRCLE_RADIUS * 3;
+        int textY = circleY + fontMetrics.getAscent() - (int) (1.5 * CIRCLE_RADIUS);
+
+        g2d.setColor(Color.black);
+        g2d.drawString("High", textX, textY);
+        g2d.drawString("Low", textX, textY + step + 1);
+
+    }
+
+    private void drawXAxisLabels(Graphics2D g2d, String label, int x, int y) {
+
+        g2d.setColor(DARK_GREY);
+        g2d.setStroke(new BasicStroke(2));
         g2d.setFont(new Font("Lucida Console", Font.PLAIN, 10));
         FontMetrics fontMetrics = g2d.getFontMetrics();
         Rectangle2D labelBounds = fontMetrics.getStringBounds(label, g2d);
@@ -209,38 +270,21 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     }
 
-    private String toFormattedNumberString(double value, double min) {
+    private void drawYAxisLabels(Graphics2D g2d, int yStep, int x, int y) {
 
-        String label;
-
-        if (min < 1e3) {
-            label = Util.toFormattedNumberString(value);
-        } else if (min >= 1e3 && min < 1e6) {
-            label = String.format("%.1f K", value / 1e3);
-        } else {
-            label = String.format("%.1f M", value / 1e6);
-        }
-
-        return label;
-
-    }
-
-    private void drawYLabels(Graphics2D g2d, int yStep, int x, int y) {
-
-        g2d.setColor(darkGrey);
+        g2d.setColor(DARK_GREY);
         g2d.setFont(new Font("Lucida Console", Font.PLAIN, 10));
 
         FontMetrics fontMetrics = g2d.getFontMetrics();
 
-        double range = max - min;
-        double rangeStep = range / (yAxisNumber - 1);
+        double rangeStep = dataRange.getRange() / (AXIS_NUMBER - 1);
 
-        for (int i = 0; i < yAxisNumber; i++) {
+        for (int i = 0; i < AXIS_NUMBER; i++) {
 
-            String label = toFormattedNumberString(min + i * rangeStep, min);
+            String label = Util.toFormattedNumberString(dataRange.getMinRange() + i * rangeStep, dataRange.getMinRange());
             Rectangle2D labelBounds = fontMetrics.getStringBounds(label, g2d);
 
-            int tx = x - (int) labelBounds.getWidth() - 5;
+            int tx = x - (int) labelBounds.getWidth() - AXIS_OFFSET;
             int ty = y + fontMetrics.getAscent() / 2 - i * yStep - 1;
             g2d.drawString(label, tx, ty);
 
@@ -251,7 +295,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
     private void drawCircle(Graphics2D g2d, int x, int y, Color color) {
 
         g2d.setColor(color);
-        Ellipse2D.Double ellipse = new Ellipse2D.Double(x - circleRadius, y - circleRadius, 2 * circleRadius, 2 * circleRadius);
+        Ellipse2D.Double ellipse = new Ellipse2D.Double(x - CIRCLE_RADIUS, y - CIRCLE_RADIUS, 2 * CIRCLE_RADIUS, 2 * CIRCLE_RADIUS);
         g2d.fill(ellipse);
 
     }
@@ -284,7 +328,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
             tx = getWidth() - recordBoundWidth - minMargin;
         }
 
-        g2d.setColor(lightGrey);
+        g2d.setColor(LIGHT_GREY);
         g2d.setStroke(new BasicStroke(1));
         g2d.drawRect(tx, ty, recordBoundWidth, recordBoundHeight);
 
@@ -303,4 +347,5 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         mouseY = e.getY();
         repaint();
     }
+
 }

@@ -4,23 +4,45 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 class Util {
 
     private static DecimalFormat integerFormatter = new DecimalFormat("#,###");
-    private static DecimalFormat oneDecimalFormatter = new DecimalFormat("#,###.0");
-    private static DecimalFormat twoDecimalFormatter = new DecimalFormat("#,###.00");
+    private static DecimalFormat DecimalFormatter = new DecimalFormat("#,###.00");
+    private static final String[] SHORT_MONTH_ARRAY = new DateFormatSymbols().getShortMonths();
+
+    static String getUpperCaseShortMonth(String month) {
+
+        return SHORT_MONTH_ARRAY[Integer.parseInt(month)].toUpperCase();
+
+    }
 
     static String toFormattedNumberString(double value) {
 
         if (value % 1 == 0) {
             return integerFormatter.format(value);
-        } else if (value % 0.5 == 0) {
-            return oneDecimalFormatter.format(value);
         }
-        return twoDecimalFormatter.format(value);
+        return DecimalFormatter.format(value);
+    }
+
+    static String toFormattedNumberString(double value, double min) {
+
+        String label;
+
+        if (min < 1e3) {
+            label = Util.toFormattedNumberString(value);
+        } else if (min >= 1e3 && min < 1e6) {
+            label = String.format("%.1f K", value / 1e3);
+        } else {
+            label = String.format("%.1f M", value / 1e6);
+        }
+
+        return label;
 
     }
 
@@ -42,14 +64,14 @@ class Util {
         return false;
     }
 
-    static ArrayList<String[]> parseCSVFile(String filePath) throws IOException {
+    static List<List<String>> parseCSVFile(String filePath) throws IOException {
 
-        ArrayList<String[]> collection = new ArrayList<>();
+        List<List<String>> collection = new ArrayList<>();
 
         InputStream inputStream = new FileInputStream(new File(filePath));
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-        bufferedReader.lines().skip(1).forEach((line) -> collection.add(line.split(",")));
+        bufferedReader.lines().skip(1).forEach((line) -> collection.add(Arrays.asList(line.split(","))));
         bufferedReader.close();
 
         return collection;
