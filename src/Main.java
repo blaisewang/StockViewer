@@ -25,10 +25,8 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class Main extends Application {
 
-    private static final int FRAME_WIDTH = 1440;
-    private static final int FRAME_HEIGHT = 900;
+public class Main extends Application {
 
     private static final int SHAKING_CYCLE = 3;
     private static final double SHAKING_DURATION = 0.08;
@@ -217,11 +215,10 @@ public class Main extends Application {
                     endDate.format(dateFormatterUS));
 
             String filePath = symbol + "_" + startDateUK + "_" + endDateUK + ".csv";
-            String frameTitle = (symbol + " " + startDateUK + " to " + endDateUK).replace('_', '/');
 
             try {
                 if (Util.downloadFile(filePath, url)) {
-                    Thread plotThread = new Thread(new PlottingTask(filePath, frameTitle));
+                    Thread plotThread = new Thread(new PlottingTask(filePath));
                     plotThread.start();
                 }
             } catch (IOException e) {
@@ -233,20 +230,19 @@ public class Main extends Application {
     private class PlottingTask implements Runnable {
 
         private String filePath;
-        private String frameTitle;
 
-        PlottingTask(String filePath, String frameTitle) {
+        PlottingTask(String filePath) {
             this.filePath = filePath;
-            this.frameTitle = frameTitle;
         }
 
         public void run() {
             try {
-                new DataParser(filePath, frameTitle, FRAME_WIDTH, FRAME_HEIGHT);
+                new DataParser(filePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     public static void main(String[] args) {

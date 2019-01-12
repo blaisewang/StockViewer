@@ -148,6 +148,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
     }
 
     private void initialise(Graphics2D g2d) {
+
         g2d.setRenderingHints(new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON));
@@ -179,6 +180,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         g2d.setRenderingHints(new RenderingHints(
                 RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+
     }
 
     private void drawTitle(Graphics2D g2d) {
@@ -343,9 +345,11 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     @Override
     public void mouseMoved(MouseEvent e) {
+
         mouseX = e.getX();
         mouseY = e.getY();
         repaint();
+
     }
 
 }

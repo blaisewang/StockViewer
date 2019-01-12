@@ -3,12 +3,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 class DataParser {
 
     private static int dataSize;
+    private static final String FRAME_TITLE_TEMPLATE = "%s  %s/%s/%s  to  %s/%s/%s";
     private static final String[] TITLE_ARRAY = {"OPEN", "CLOSE", "VOLUME", "HIGH & LOW"};
 
-    DataParser(String filePath, String frameTitle, int frameWidth, int frameHeight) throws IOException {
+    DataParser(String filePath) throws IOException {
 
         List<List<String>> recordCollection = Util.parseCSVFile(filePath);
 
@@ -40,9 +42,16 @@ class DataParser {
         panelList.add(getLineChartPanel(TITLE_ARRAY[2], false, dateList, volumeList));
         panelList.add(getLineChartPanel(TITLE_ARRAY[3], dateList, highList, lowList));
 
-        PlotFrame plottingFrame = new PlotFrame(frameWidth, frameHeight, panelList);
-        plottingFrame.setTitle(frameTitle);
+        PlotFrame plottingFrame = new PlotFrame(getFrameTitle(filePath), panelList);
         plottingFrame.setVisible(true);
+
+    }
+
+    private String getFrameTitle(String filePath) {
+
+        String[] pathArray = filePath.split("/");
+        pathArray = pathArray[pathArray.length - 1].split(".csv")[0].split("_");
+        return String.format(FRAME_TITLE_TEMPLATE, pathArray[0], pathArray[1], pathArray[2], pathArray[3], pathArray[4], pathArray[5], pathArray[6]);
 
     }
 
