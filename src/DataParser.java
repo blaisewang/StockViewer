@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +24,7 @@ class DataParser {
         for (int i = dataSize - 1; i >= 0; i--) {
 
             String[] date = recordCollection.get(i).get(0).split("/");
-            dateList.add(date[1] + " " + Util.getUpperCaseShortMonth(date[0]) + " " + date[2]);
+            dateList.add(date[1] + " " + Util.getShortMonth(date[0]) + " " + date[2]);
 
             openList.add(Double.parseDouble(recordCollection.get(i).get(1)));
             highList.add(Double.parseDouble(recordCollection.get(i).get(2)));
@@ -36,9 +35,9 @@ class DataParser {
         }
 
         List<LineChartPanel> panelList = new ArrayList<>();
-        panelList.add(getLineChartPanel(TITLE_ARRAY[0], dateList, openList));
-        panelList.add(getLineChartPanel(TITLE_ARRAY[1], dateList, closeList));
-        panelList.add(getLineChartPanel(TITLE_ARRAY[2], dateList, volumeList));
+        panelList.add(getLineChartPanel(TITLE_ARRAY[0], true, dateList, openList));
+        panelList.add(getLineChartPanel(TITLE_ARRAY[1], true, dateList, closeList));
+        panelList.add(getLineChartPanel(TITLE_ARRAY[2], false, dateList, volumeList));
         panelList.add(getLineChartPanel(TITLE_ARRAY[3], dateList, highList, lowList));
 
         PlotFrame plottingFrame = new PlotFrame(frameWidth, frameHeight, panelList);
@@ -47,11 +46,11 @@ class DataParser {
 
     }
 
-    private static LineChartPanel getLineChartPanel(String title, List<String> date, List<Double> data) {
+    private static LineChartPanel getLineChartPanel(String title, boolean isPrice, List<String> date, List<Double> data) {
 
         DataRange dataRange = getDataRange(data);
         List<Double> scaled = getScaledData(dataRange, data);
-        List<String> records = getRecords(date, data);
+        List<String> records = getRecords(isPrice, date, data);
 
         return new LineChartPanel(title, scaled, dataRange, records);
 
@@ -94,12 +93,16 @@ class DataParser {
 
     }
 
-    private static List<String> getRecords(List<String> date, List<Double> data) {
+    private static List<String> getRecords(boolean isPrice, List<String> date, List<Double> data) {
 
         List<String> records = new ArrayList<>();
         for (int i = 0; i < dataSize; i++) {
             String formattedData = Util.toFormattedNumberString(data.get(i));
-            records.add(formattedData + "  " + date.get(i));
+            if (isPrice) {
+                records.add(formattedData + " USD  " + date.get(i));
+            } else {
+                records.add(formattedData + " Shares  " + date.get(i));
+            }
         }
         return records;
 
@@ -111,7 +114,7 @@ class DataParser {
         for (int i = 0; i < dataSize; i++) {
             String highPrice = Util.toFormattedNumberString(high.get(i));
             String lowPrice = Util.toFormattedNumberString(low.get(i));
-            records.add(highPrice + " " + lowPrice + "  " + date.get(i));
+            records.add(highPrice + " USD  " + lowPrice + " USD  " + date.get(i));
         }
         return records;
 

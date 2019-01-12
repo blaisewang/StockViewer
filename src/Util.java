@@ -16,9 +16,9 @@ class Util {
     private static DecimalFormat DecimalFormatter = new DecimalFormat("#,###.00");
     private static final String[] SHORT_MONTH_ARRAY = new DateFormatSymbols().getShortMonths();
 
-    static String getUpperCaseShortMonth(String month) {
+    static String getShortMonth(String month) {
 
-        return SHORT_MONTH_ARRAY[Integer.parseInt(month)].toUpperCase();
+        return SHORT_MONTH_ARRAY[Integer.parseInt(month) - 1];
 
     }
 
@@ -27,7 +27,14 @@ class Util {
         if (value % 1 == 0) {
             return integerFormatter.format(value);
         }
-        return DecimalFormatter.format(value);
+
+        String string = DecimalFormatter.format(value);
+        if (string.charAt(string.length() - 1) == '0') {
+            string = string.substring(0, string.length() - 1);
+        }
+
+        return string;
+
     }
 
     static String toFormattedNumberString(double value, double min) {
@@ -38,8 +45,10 @@ class Util {
             label = Util.toFormattedNumberString(value);
         } else if (min >= 1e3 && min < 1e6) {
             label = String.format("%.1f K", value / 1e3);
-        } else {
+        } else if (min >= 1e6 && min < 1e9){
             label = String.format("%.1f M", value / 1e6);
+        } else {
+            label = String.format("%.1f B", value / 1e9);
         }
 
         return label;

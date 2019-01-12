@@ -1,24 +1,39 @@
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Calendar;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class Main extends Application {
 
-    private SortedMap<String, String> symbolMap = new TreeMap<>();
-
     private static final int FRAME_WIDTH = 1440;
     private static final int FRAME_HEIGHT = 900;
+
+    private static final int SHAKING_CYCLE = 3;
+    private static final double SHAKING_DURATION = 0.08;
+
+    private SortedMap<String, String> symbolMap = new TreeMap<>();
 
     private static final String SYMBOL_FILE_PATH = "nasdaq-listed-symbols.csv";
     private static final String SYMBOL_FILE_URL = "https://datahub.io/core/nasdaq-listings/r/nasdaq-listed-symbols.csv";
@@ -29,9 +44,8 @@ public class Main extends Application {
 
         initialise();
 
-        primaryStage.setTitle("Nasdaq Stock Viewer");
-
         AutoCompleteTextField symbolSearchTextFiled = new AutoCompleteTextField(symbolMap);
+        symbolSearchTextFiled.setPromptText("e.g. AAPL");
 
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -40,21 +54,71 @@ public class Main extends Application {
         DatePicker startDatePicker = new DatePicker(yesterday);
         DatePicker endDatePicker = new DatePicker(LocalDate.now());
 
-        Button viewButton = new Button("View");
-        viewButton.setOnAction(e -> {
-            String symbolName = symbolSearchTextFiled.getText();
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(4);
+        gridPane.setVgap(4);
+        gridPane.setPadding(new Insets(20, 20, 20, 20));
+
+        Insets textMargin = new Insets(0, 10, 3, 12);
+        Insets fieldMargin = new Insets(0, 10, 3, 10);
+
+        Text symbolHintText = new Text("Stock Symbol");
+        GridPane.setMargin(symbolHintText, textMargin);
+        gridPane.add(symbolHintText, 0, 0);
+
+        GridPane.setMargin(symbolSearchTextFiled, fieldMargin);
+        gridPane.add(symbolSearchTextFiled, 0, 1);
+
+        Text startDateHintText = new Text("Start Date");
+        GridPane.setMargin(startDateHintText, textMargin);
+        gridPane.add(startDateHintText, 1, 0);
+
+        GridPane.setMargin(startDatePicker, fieldMargin);
+        gridPane.add(startDatePicker, 1, 1);
+
+        Text endDateHintText = new Text("End Date");
+        GridPane.setMargin(endDateHintText, textMargin);
+        gridPane.add(endDateHintText, 2, 0);
+
+        GridPane.setMargin(endDatePicker, fieldMargin);
+        gridPane.add(endDatePicker, 2, 1);
+
+        Label errorHintLabel = new Label("");
+        errorHintLabel.setFont(Font.font(11));
+        errorHintLabel.setTextFill(Color.RED);
+        GridPane.setMargin(errorHintLabel, new Insets(0, 0, 0, 12));
+        gridPane.add(errorHintLabel, 0, 2);
+
+        Button retrieveButton = new Button("Retrieve");
+        retrieveButton.setOnAction(e -> {
+            String symbol = symbolSearchTextFiled.getText().split(" ")[0].toUpperCase();
             LocalDate startDate = startDatePicker.getValue();
             LocalDate endDate = endDatePicker.getValue();
 
-            Thread downloadThread = new Thread(new DownloadTask(symbolName, startDate, endDate));
-            downloadThread.start();
+            if (symbol.length() == 0) {
+                errorHintLabel.setText("EMPTY STOCK SYMBOL");
+                shakeStage(primaryStage);
+            } else if (!symbolMap.containsKey(symbol)) {
+                errorHintLabel.setText("NOT TRADING ON NASDAQ");
+                shakeStage(primaryStage);
+            } else {
+                errorHintLabel.setText("");
+                Thread downloadThread = new Thread(new DownloadTask(symbol, startDate, endDate));
+                downloadThread.start();
+            }
+
         });
 
-        HBox hbox = new HBox(symbolSearchTextFiled, startDatePicker, endDatePicker, viewButton);
+        GridPane.setHalignment(retrieveButton, HPos.CENTER);
+        GridPane.setMargin(retrieveButton, new Insets(5, 0, 10, 0));
+        gridPane.add(retrieveButton, 0, 3, 4, 1);
 
-        Scene scene = new Scene(hbox, 600, 400);
+        Scene scene = new Scene(gridPane);
 
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+
+        primaryStage.setTitle("Nasdaq Stock Viewer");
 
         primaryStage.setOnCloseRequest(e -> {
             Platform.exit();
@@ -87,15 +151,36 @@ public class Main extends Application {
 
     }
 
+
+    private void shakeStage(Stage stage) {
+
+        Timeline timelineX = new Timeline(
+                new KeyFrame(Duration.seconds(SHAKING_DURATION), t -> stage.setX(stage.getX() + 5)),
+                new KeyFrame(Duration.seconds(SHAKING_DURATION * 2), t -> stage.setX(stage.getX() - 5))
+        );
+
+        timelineX.setCycleCount(SHAKING_CYCLE);
+        timelineX.play();
+
+        Timeline timelineY = new Timeline(
+                new KeyFrame(Duration.seconds(SHAKING_DURATION), t -> stage.setY(stage.getY() + 5)),
+                new KeyFrame(Duration.seconds(SHAKING_DURATION * 2), t -> stage.setY(stage.getY() - 5))
+        );
+
+        timelineY.setCycleCount(SHAKING_CYCLE);
+        timelineY.play();
+
+    }
+
     private class DownloadTask implements Runnable {
 
         private String symbol;
         private LocalDate startDate;
         private LocalDate endDate;
 
-        DownloadTask(String symbolName, LocalDate startDate, LocalDate endDate) {
+        DownloadTask(String symbol, LocalDate startDate, LocalDate endDate) {
 
-            this.symbol = symbolName.split(" ")[0].toUpperCase();
+            this.symbol = symbol;
             this.startDate = startDate;
             this.endDate = endDate;
 
