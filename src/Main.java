@@ -33,6 +33,7 @@ public class Main extends Application {
     private static final int SHAKING_CYCLE = 3;
     private static final double SHAKING_DURATION = 0.08;
 
+    private static final LocalDate today = LocalDate.now();
     private SortedMap<String, String> symbolMap = new TreeMap<>();
 
     private static final String SYMBOL_FILE_PATH = "nasdaq-listed-symbols.csv";
@@ -43,16 +44,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws IOException {
 
         initialise();
-
-        AutoCompleteTextField symbolSearchTextFiled = new AutoCompleteTextField(symbolMap);
-        symbolSearchTextFiled.setPromptText("e.g. AAPL");
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -1);
-        LocalDate yesterday = calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-        DatePicker startDatePicker = new DatePicker(yesterday);
-        DatePicker endDatePicker = new DatePicker(LocalDate.now());
 
         GridPane gridPane = new GridPane();
         gridPane.setHgap(4);
@@ -66,12 +57,20 @@ public class Main extends Application {
         GridPane.setMargin(symbolHintText, textMargin);
         gridPane.add(symbolHintText, 0, 0);
 
+        AutoCompleteTextField symbolSearchTextFiled = new AutoCompleteTextField(symbolMap);
+        symbolSearchTextFiled.setPromptText("e.g. AAPL");
+
         GridPane.setMargin(symbolSearchTextFiled, fieldMargin);
         gridPane.add(symbolSearchTextFiled, 0, 1);
 
         Text startDateHintText = new Text("Start Date");
         GridPane.setMargin(startDateHintText, textMargin);
         gridPane.add(startDateHintText, 1, 0);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -1);
+        LocalDate yesterday = calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        DatePicker startDatePicker = new DatePicker(yesterday);
 
         GridPane.setMargin(startDatePicker, fieldMargin);
         gridPane.add(startDatePicker, 1, 1);
@@ -80,13 +79,15 @@ public class Main extends Application {
         GridPane.setMargin(endDateHintText, textMargin);
         gridPane.add(endDateHintText, 2, 0);
 
+        DatePicker endDatePicker = new DatePicker(today);
+
         GridPane.setMargin(endDatePicker, fieldMargin);
         gridPane.add(endDatePicker, 2, 1);
 
         Label errorHintLabel = new Label("");
         errorHintLabel.setFont(Font.font(11));
         errorHintLabel.setTextFill(Color.RED);
-        GridPane.setMargin(errorHintLabel, new Insets(0, 0, 0, 12));
+        GridPane.setMargin(errorHintLabel, new Insets(0, 0, 0, 13));
         gridPane.add(errorHintLabel, 0, 2);
 
         Button retrieveButton = new Button("Retrieve");
@@ -99,7 +100,10 @@ public class Main extends Application {
                 errorHintLabel.setText("EMPTY STOCK SYMBOL");
                 shakeStage(primaryStage);
             } else if (!symbolMap.containsKey(symbol)) {
-                errorHintLabel.setText("NOT TRADING ON NASDAQ");
+                errorHintLabel.setText("NOT FOUND ON NASDAQ");
+                shakeStage(primaryStage);
+            } else if (!isLegalDate(startDate, endDate)) {
+                errorHintLabel.setText("ILLEGAL DATE SELECTION");
                 shakeStage(primaryStage);
             } else {
                 errorHintLabel.setText("");
@@ -172,6 +176,18 @@ public class Main extends Application {
 
     }
 
+    private boolean isLegalDate(LocalDate startDate, LocalDate endDate) {
+
+        if (ChronoUnit.DAYS.between(startDate, endDate) < 0) {
+            return false;
+        }
+        if (ChronoUnit.DAYS.between(startDate, today) < 0) {
+            return false;
+        }
+        return ChronoUnit.DAYS.between(endDate, today) >= 0;
+
+    }
+
     private class DownloadTask implements Runnable {
 
         private String symbol;
@@ -188,17 +204,17 @@ public class Main extends Application {
 
         public void run() {
 
-            DateTimeFormatter formatterUK = DateTimeFormatter.ofPattern("dd_MM_uuuu");
-            DateTimeFormatter formatterUS = DateTimeFormatter.ofPattern("MM/dd/uuuu");
+            DateTimeFormatter dateFormatterUK = DateTimeFormatter.ofPattern("dd_MM_uuuu");
+            DateTimeFormatter dateFormatterUS = DateTimeFormatter.ofPattern("MM/dd/uuuu");
 
-            String startDateUK = startDate.format(formatterUK);
-            String endDateUK = endDate.format(formatterUK);
+            String startDateUK = startDate.format(dateFormatterUK);
+            String endDateUK = endDate.format(dateFormatterUK);
 
             String url = String.format(STOCK_URL_TEMPLATE,
                     symbol,
                     Long.toString(ChronoUnit.DAYS.between(startDate, endDate)),
-                    startDate.format(formatterUS),
-                    endDate.format(formatterUS));
+                    startDate.format(dateFormatterUS),
+                    endDate.format(dateFormatterUS));
 
             String filePath = symbol + "_" + startDateUK + "_" + endDateUK + ".csv";
             String frameTitle = (symbol + " " + startDateUK + " to " + endDateUK).replace('_', '/');
