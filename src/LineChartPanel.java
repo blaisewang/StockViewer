@@ -11,8 +11,8 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     private String caption;
 
-    private int recordSize;
-    private List<String> records;
+    private int dataSize;
+    private List<String> data;
 
     private Range range;
 
@@ -44,10 +44,10 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
     private static final Color DARK_BLUE = new Color(57, 119, 175);
     private static final Color DARK_ORANGE = new Color(239, 113, 54);
 
-    LineChartPanel(String caption, List<Double> scaled, Range range, List<String> records) {
+    LineChartPanel(String caption, List<Double> scaled, Range range, List<String> detailedData) {
 
         super.addMouseMotionListener(this);
-        initialise(caption, scaled, null, range, records);
+        initialise(caption, scaled, null, range, detailedData);
 
     }
 
@@ -55,10 +55,10 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
                    List<Double> highScaled,
                    List<Double> lowScaled,
                    Range range,
-                   List<String> records) {
+                   List<String> detailedData) {
 
         super.addMouseMotionListener(this);
-        initialise(caption, highScaled, lowScaled, range, records);
+        initialise(caption, highScaled, lowScaled, range, detailedData);
 
     }
 
@@ -66,7 +66,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
                             List<Double> highScaled,
                             List<Double> lowScaled,
                             Range range,
-                            List<String> records) {
+                            List<String> detailedData) {
 
         super.setBackground(Color.white);
         super.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
@@ -75,12 +75,12 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
         this.highScaled = highScaled;
         this.lowScaled = lowScaled;
         this.range = range;
-        this.records = records;
-        this.recordSize = records.size();
+        this.data = detailedData;
+        this.dataSize = detailedData.size();
 
-        this.xPoints = new int[recordSize];
-        this.highYPoints = new int[recordSize];
-        this.lowYPoints = new int[recordSize];
+        this.xPoints = new int[dataSize];
+        this.highYPoints = new int[dataSize];
+        this.lowYPoints = new int[dataSize];
 
     }
 
@@ -105,13 +105,13 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
         drawYAxisLabels(g2d, axisStep, axisX1, axisY);
 
-        if (recordSize == 0) {
+        if (dataSize == 0) {
             return;
         }
 
-        double xStep = lineChartWidth / ((double) recordSize + 1);
+        double xStep = lineChartWidth / ((double) dataSize + 1);
 
-        for (int i = 1; i < recordSize + 1; i++) {
+        for (int i = 1; i < dataSize + 1; i++) {
             xPoints[i - 1] = (int) (LEFT_MARGIN + i * xStep);
             highYPoints[i - 1] = (int) (highScaled.get(i - 1) * lineChartHeight) + TOP_MARGIN;
         }
@@ -120,19 +120,19 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
         if (lowScaled != null) {
 
-            for (int i = 0; i < recordSize; i++) {
+            for (int i = 0; i < dataSize; i++) {
                 lowYPoints[i] = (int) (lowScaled.get(i) * lineChartHeight) + TOP_MARGIN;
             }
             drawPolyLine(g2d, xPoints, lowYPoints, DARK_ORANGE);
             drawLegend(g2d);
         }
 
-        int[] steps = new int[]{0, recordSize / 4, recordSize / 2, (int) (recordSize * 0.75), recordSize - 1};
+        int[] steps = new int[]{0, dataSize / 4, dataSize / 2, (int) (dataSize * 0.75), dataSize - 1};
 
         for (int step : steps) {
             int x = xPoints[step];
 
-            String[] labelData = records.get(step).split(" {2}");
+            String[] labelData = data.get(step).split(" {2}");
             String label = labelData[labelData.length - 1];
 
             drawXAxisLabels(g2d, label, x, axisY);
@@ -140,7 +140,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
         int index = (int) Math.round((mouseX - LEFT_MARGIN) / xStep) - 1;
 
-        if (index >= 0 && index < recordSize && mouseY > TOP_MARGIN && mouseY < axisY) {
+        if (index >= 0 && index < dataSize && mouseY > TOP_MARGIN && mouseY < axisY) {
 
             int x = xPoints[index];
             int y = highYPoints[index];
@@ -152,7 +152,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
                 drawCircle(g2d, x, y, DARK_ORANGE);
             }
 
-            drawRecordRectangle(g2d, records.get(index), x);
+            drawDetailedDataRectangle(g2d, data.get(index), x);
 
         }
     }
@@ -233,7 +233,7 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
             g2d.setStroke(new BasicStroke(2));
             g2d.setColor(color);
-            g2d.drawPolyline(xPoints, yPoints, recordSize);
+            g2d.drawPolyline(xPoints, yPoints, dataSize);
 
         }
 
@@ -323,42 +323,42 @@ public class LineChartPanel extends JPanel implements MouseMotionListener {
 
     }
 
-    private void drawRecordRectangle(Graphics2D g2d, String record, int x) {
+    private void drawDetailedDataRectangle(Graphics2D g2d, String detailedData, int x) {
 
         g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 13));
         FontMetrics fontMetrics = g2d.getFontMetrics();
-        Rectangle2D recordBounds = fontMetrics.getStringBounds(record, g2d);
+        Rectangle2D detailedDataBounds = fontMetrics.getStringBounds(detailedData, g2d);
 
         int xOffset = 10;
         int yOffset = 5;
 
-        int recordBoundWidth = (int) recordBounds.getWidth() + xOffset;
-        int recordBoundHeight = (int) recordBounds.getHeight() + yOffset;
+        int detailedDataBoundWidth = (int) detailedDataBounds.getWidth() + xOffset;
+        int detailedDataBoundHeight = (int) detailedDataBounds.getHeight() + yOffset;
 
         int minMargin = 10;
-        int leftMargin = x - recordBoundWidth / 2;
+        int leftMargin = x - detailedDataBoundWidth / 2;
 
         int tx = leftMargin;
-        int ty = TOP_MARGIN - recordBoundHeight - minMargin;
+        int ty = TOP_MARGIN - detailedDataBoundHeight - minMargin;
 
         if (leftMargin < minMargin) {
             tx = minMargin;
         }
 
-        int rightMargin = getWidth() - tx - recordBoundWidth;
+        int rightMargin = getWidth() - tx - detailedDataBoundWidth;
 
         if (rightMargin < minMargin) {
-            tx = getWidth() - recordBoundWidth - minMargin;
+            tx = getWidth() - detailedDataBoundWidth - minMargin;
         }
 
         g2d.setColor(LIGHT_GREY);
         g2d.setStroke(new BasicStroke(1));
-        g2d.drawRect(tx, ty, recordBoundWidth, recordBoundHeight);
+        g2d.drawRect(tx, ty, detailedDataBoundWidth, detailedDataBoundHeight);
 
         g2d.setColor(Color.black);
         tx += xOffset / 2;
         ty += +yOffset / 2 + fontMetrics.getAscent();
-        g2d.drawString(record, tx, ty);
+        g2d.drawString(detailedData, tx, ty);
 
     }
 

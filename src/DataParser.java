@@ -10,8 +10,7 @@ class DataParser {
     private static final String FRAME_TITLE_TEMPLATE = "%s  %s/%s/%s  to  %s/%s/%s";
     private static final String[] CAPTION_ARRAY = {"OPEN", "CLOSE", "VOLUME", "HIGH & LOW"};
 
-    DataParser(String filePath) throws IOException {
-
+    static void parseData(String filePath) throws IOException {
         List<List<String>> collections = Util.parseCSVFile(filePath);
 
         dataSize = collections.size();
@@ -44,10 +43,9 @@ class DataParser {
 
         PlotFrame plottingFrame = new PlotFrame(getFrameTitle(filePath), panelList);
         plottingFrame.setVisible(true);
-
     }
 
-    private double getData(int index, List<String> stringList) {
+    private static double getData(int index, List<String> stringList) {
 
         try {
             return Double.parseDouble(stringList.get(index));
@@ -57,7 +55,7 @@ class DataParser {
 
     }
 
-    private String getFrameTitle(String filePath) {
+    private static String getFrameTitle(String filePath) {
 
         String[] pathArray = filePath.split("/");
         pathArray = pathArray[pathArray.length - 1].split(".csv")[0].split("_");
@@ -81,9 +79,9 @@ class DataParser {
 
         Range range = getRange(data);
         List<Double> scaled = getScaledData(range, data);
-        List<String> records = getRecords(isPrice, date, data);
+        List<String> details = getDetails(isPrice, date, data);
 
-        return new LineChartPanel(caption, scaled, range, records);
+        return new LineChartPanel(caption, scaled, range, details);
 
     }
 
@@ -95,9 +93,9 @@ class DataParser {
         Range range = getRange(high, low);
         List<Double> highScaled = getScaledData(range, high);
         List<Double> lowScaled = getScaledData(range, low);
-        List<String> records = getRecords(date, high, low);
+        List<String> details = getDetails(date, high, low);
 
-        return new LineChartPanel(caption, highScaled, lowScaled, range, records);
+        return new LineChartPanel(caption, highScaled, lowScaled, range, details);
 
     }
 
@@ -127,30 +125,30 @@ class DataParser {
 
     }
 
-    private static List<String> getRecords(boolean isPrice, List<String> date, List<Double> data) {
+    private static List<String> getDetails(boolean isPrice, List<String> date, List<Double> data) {
 
-        List<String> records = new ArrayList<>();
+        List<String> details = new ArrayList<>();
         for (int i = 0; i < dataSize; i++) {
             String formattedData = Util.toFormattedNumberString(data.get(i));
             if (isPrice) {
-                records.add(formattedData + " USD  " + date.get(i));
+                details.add(formattedData + " USD  " + date.get(i));
             } else {
-                records.add(formattedData + " Shares  " + date.get(i));
+                details.add(formattedData + " Shares  " + date.get(i));
             }
         }
-        return records;
+        return details;
 
     }
 
-    private static List<String> getRecords(List<String> date, List<Double> high, List<Double> low) {
+    private static List<String> getDetails(List<String> date, List<Double> high, List<Double> low) {
 
-        List<String> records = new ArrayList<>();
+        List<String> details = new ArrayList<>();
         for (int i = 0; i < dataSize; i++) {
             String highPrice = Util.toFormattedNumberString(high.get(i));
             String lowPrice = Util.toFormattedNumberString(low.get(i));
-            records.add(highPrice + " USD  " + lowPrice + " USD  " + date.get(i));
+            details.add(highPrice + " USD  " + lowPrice + " USD  " + date.get(i));
         }
-        return records;
+        return details;
 
     }
 }
