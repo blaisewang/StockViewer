@@ -1,5 +1,8 @@
 /**
  * Range data structure
+ *
+ * @author Xudong Wang (xwang199@sheffield.ac.uk)
+ * @version 1.0 12 January 2019
  */
 class Range {
 

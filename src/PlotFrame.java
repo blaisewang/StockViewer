@@ -3,7 +3,10 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Plotting JFrame
+ * Plotting window class
+ *
+ * @author Xudong Wang (xwang199@sheffield.ac.uk)
+ * @version 1.0 12 January 2019
  */
 class PlotFrame extends JFrame {
 
