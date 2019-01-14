@@ -219,7 +219,7 @@ class DataParser {
      */
     private static List<Double> getScaledData(Range range, List<Double> data) {
 
-        // x_new = (max - x_old) / (max - min)
+        // d_new = (max - d_old) / (max - min)
         return data.stream().map(d -> (range.getMax() - d) / range.getRange()).collect(Collectors.toList());
 
     }
@@ -235,7 +235,7 @@ class DataParser {
     private static List<String> getDetails(boolean isPrice, List<String> date, List<Double> data) {
 
         List<String> details = new ArrayList<>();
-        
+
         for (int i = 0; i < dataSize; i++) {
             // format data
             String formattedData = Util.toFormattedNumberString(data.get(i));
