@@ -36,20 +36,15 @@ import java.util.TreeMap;
  * the program should retrieve the historical data that is designated.
  * The retrieved data is displayed on a new window with four line chart graphs.
  * The line chart graph traces the mouse position to display appropriate details.
- *
- *
- * @version 1.0 12 January 2019
+ * <p>
+ * MarketGUI class
+ * main class is the main class of the program.
+ * It retrieves Nasdaq company list and their ticker symbols, draws main interface of the program.
  *
  * @author Xudong Wang (xwang199@sheffield.ac.uk)
+ * @version 1.0 12 January 2019
  */
 
-
-
-/*
- * Class: MarketGUI
- * This class is the main class of the program.
- * It retrieves Nasdaq company list and their ticker symbols, draws main interface of the program.
- */
 public class MarketGUI extends Application {
 
     // number of window shakes and the duration of each shaking
@@ -71,6 +66,7 @@ public class MarketGUI extends Application {
 
     /**
      * Start of JavaFX application
+     *
      * @param primaryStage stage of the main window
      * @throws IOException if initialisation failed
      */
@@ -131,7 +127,7 @@ public class MarketGUI extends Application {
         Label errorMessageLabel = new Label("");
         errorMessageLabel.setFont(Font.font(11));
         errorMessageLabel.setTextFill(Color.RED);
-        GridPane.setMargin(errorMessageLabel, new Insets(0, 0, 0, 13));
+        GridPane.setMargin(errorMessageLabel, new Insets(0, 0, 0, 14));
         gridPane.add(errorMessageLabel, 0, 2);
 
         // retrieve button, linked with previous components
@@ -198,6 +194,7 @@ public class MarketGUI extends Application {
     /**
      * Ticker symbol list download function
      * the main thread is blocked until this function is finished
+     *
      * @throws IOException if download or parsing failed
      */
     private void initialise() throws IOException {
@@ -227,6 +224,7 @@ public class MarketGUI extends Application {
 
     /**
      * Window shaking animation function
+     *
      * @param stage main stage of the window
      */
     private void shakeStage(Stage stage) {
@@ -257,8 +255,9 @@ public class MarketGUI extends Application {
 
     /**
      * Check the validation of start date and end date
+     *
      * @param startDate start date selected
-     * @param endDate end date selected
+     * @param endDate   end date selected
      * @return boolean true for valid, false for invalid
      */
     private boolean isValidDate(LocalDate startDate, LocalDate endDate) {
@@ -288,9 +287,10 @@ public class MarketGUI extends Application {
 
         /**
          * Class constructor
-         * @param symbol ticker symbol
+         *
+         * @param symbol    ticker symbol
          * @param startDate start date
-         * @param endDate end date
+         * @param endDate   end date
          */
         DataDownloadTask(String symbol, LocalDate startDate, LocalDate endDate) {
 
@@ -346,6 +346,7 @@ public class MarketGUI extends Application {
 
         /**
          * Class constructor
+         *
          * @param filePath file path to parse data
          */
         PlottingTask(String filePath) {
@@ -368,6 +369,7 @@ public class MarketGUI extends Application {
 
     /**
      * Main function of the program
+     *
      * @param args command line arguments
      */
     public static void main(String[] args) {
