@@ -60,7 +60,8 @@ public class MarketGUI extends Application {
     // key: ticker symbol value: ticker symbol - company name
     private static SortedMap<String, String> symbolMap = new TreeMap<>();
 
-    // constant URL variables
+    // constant variables
+    private static final String APPLICATION_TITLE = "Nasdaq Stock Viewer";
     private static final String SYMBOL_FILE_PATH = "nasdaq-listed-symbols.csv";
     private static final String SYMBOL_FILE_URL = "https://datahub.io/core/nasdaq-listings/r/nasdaq-listed-symbols.csv";
     private static final String STOCK_URL_TEMPLATE = "https://quotes.wsj.com/%s/historical-prices/download?MOD_VIEW=page&num_rows=%s&startDate=%s&endDate=%s";
@@ -180,7 +181,7 @@ public class MarketGUI extends Application {
         // set the window is not resizable.
         primaryStage.setResizable(false);
 
-        primaryStage.setTitle("Nasdaq Stock Viewer");
+        primaryStage.setTitle(APPLICATION_TITLE);
 
         // set close event
         primaryStage.setOnCloseRequest(e -> {
