@@ -201,7 +201,7 @@ public class MarketGUI extends Application {
 
         if (Util.downloadFile(SYMBOL_FILE_PATH, SYMBOL_FILE_URL)) {
             // file download succeeded, parse csv file to get a list of string list
-            List<List<String>> symbolCollection = Util.parseCSVFile(SYMBOL_FILE_PATH);
+            List<List<String>> symbolCollection = Util.splitCSVFile(SYMBOL_FILE_PATH);
 
             symbolCollection.forEach(line -> {
                 // get ticker symbol from first column

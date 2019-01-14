@@ -75,7 +75,7 @@ class Util {
         return false;
     }
 
-    static List<List<String>> parseCSVFile(String filePath) throws IOException {
+    static List<List<String>> splitCSVFile(String filePath) throws IOException {
 
         List<List<String>> collection = new ArrayList<>();
 
