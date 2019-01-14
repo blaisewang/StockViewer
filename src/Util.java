@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 /**
  * Utility class to provide common data method
  *
  * @author Xudong Wang (xwang199@sheffield.ac.uk)
- * @version 1.0 12 January 2019
+ * @version 1.0 07 January 2019
  */
+
+
 class Util {
 
     private static DecimalFormat integerFormatter = new DecimalFormat("#,###");

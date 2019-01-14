@@ -6,9 +6,15 @@ import javafx.scene.control.TextField;
 
 import java.util.*;
 
+
 /**
  * Extension of JavaFX TextField
+ *
+ * @author Xudong Wang (xwang199@sheffield.ac.uk)
+ * @version 1.0 08 January 2019
  */
+
+
 class AutoCompleteTextField extends TextField {
 
     private ContextMenu contextMenu;

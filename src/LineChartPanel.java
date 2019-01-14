@@ -6,14 +6,17 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
+
 /**
  * LineChartPanel class
  * draw line chart by given data.
  * Code traces the mouse motion to display detail information.
  *
  * @author Xudong Wang (xwang199@sheffield.ac.uk)
- * @version 1.0 12 January 2019
+ * @version 1.0 10 January 2019
  */
+
+
 class LineChartPanel extends JPanel implements MouseMotionListener {
 
     // member variables

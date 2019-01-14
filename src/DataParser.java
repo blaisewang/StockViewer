@@ -3,12 +3,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 /**
  * Utility class to parse data
  *
  * @author Xudong Wang (xwang199@sheffield.ac.uk)
- * @version 1.0 12 January 2019
+ * @version 1.0 11 January 2019
  */
+
+
 class DataParser {
 
     private static int dataSize;

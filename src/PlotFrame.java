@@ -2,12 +2,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+
 /**
  * Plotting window class
  *
  * @author Xudong Wang (xwang199@sheffield.ac.uk)
- * @version 1.0 12 January 2019
+ * @version 1.0 10 January 2019
  */
+
+
 class PlotFrame extends JFrame {
 
     private static final int FRAME_WIDTH = 1440;
