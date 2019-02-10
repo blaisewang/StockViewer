@@ -126,10 +126,11 @@ class DataParser {
      * @param data    data retrieved
      * @return LineChartPanel object
      */
-    private static LineChartPanel getLineChartPanel(String caption,
-                                                    boolean isPrice,
-                                                    List<String> date,
-                                                    List<Double> data) {
+    private static LineChartPanel getLineChartPanel(
+            String caption,
+            boolean isPrice,
+            List<String> date,
+            List<Double> data) {
 
         // get range of data
         Range range = getRange(data);
@@ -152,10 +153,11 @@ class DataParser {
      * @param low     low data
      * @return LineChartPanel object
      */
-    private static LineChartPanel getLineChartPanel(String caption,
-                                                    List<String> date,
-                                                    List<Double> high,
-                                                    List<Double> low) {
+    private static LineChartPanel getLineChartPanel(
+            String caption,
+            List<String> date,
+            List<Double> high,
+            List<Double> low) {
 
         // get range of high and low data
         Range range = getRange(high, low);

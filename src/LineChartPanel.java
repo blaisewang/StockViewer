@@ -65,7 +65,11 @@ class LineChartPanel extends JPanel implements MouseMotionListener {
      * @param range        line chart y-axis range
      * @param detailedData detailed data
      */
-    LineChartPanel(String caption, List<Double> scaled, Range range, List<String> detailedData) {
+    LineChartPanel(
+            String caption,
+            List<Double> scaled,
+            Range range,
+            List<String> detailedData) {
 
         // bind mouse motion listener
         super.addMouseMotionListener(this);
@@ -83,11 +87,12 @@ class LineChartPanel extends JPanel implements MouseMotionListener {
      * @param range        line chart y-axis range
      * @param detailedData detailed data
      */
-    LineChartPanel(String caption,
-                   List<Double> highScaled,
-                   List<Double> lowScaled,
-                   Range range,
-                   List<String> detailedData) {
+    LineChartPanel(
+            String caption,
+            List<Double> highScaled,
+            List<Double> lowScaled,
+            Range range,
+            List<String> detailedData) {
 
         // bind mouse motion listener
         super.addMouseMotionListener(this);
@@ -106,11 +111,12 @@ class LineChartPanel extends JPanel implements MouseMotionListener {
      * @see LineChartPanel#LineChartPanel(String, List, Range, List)
      * @see LineChartPanel#LineChartPanel(String, List, List, Range, List)
      */
-    private void initialise(String caption,
-                            List<Double> highScaled,
-                            List<Double> lowScaled,
-                            Range range,
-                            List<String> detailedData) {
+    private void initialise(
+            String caption,
+            List<Double> highScaled,
+            List<Double> lowScaled,
+            Range range,
+            List<String> detailedData) {
 
         // set white background
         super.setBackground(Color.white);
