@@ -316,11 +316,13 @@ public class MarketGUI extends Application {
             String endDateUK = endDate.format(dateFormatterUK);
 
             // format the Wall Street Journal quoting URL
-            String url = String.format(STOCK_URL_TEMPLATE,
+            String url = String.format(
+                    STOCK_URL_TEMPLATE,
                     symbol,
                     Long.toString(ChronoUnit.DAYS.between(startDate, endDate)),
                     startDate.format(dateFormatterUS),
-                    endDate.format(dateFormatterUS));
+                    endDate.format(dateFormatterUS)
+            );
 
             // format data filename
             String filePath = symbol + "_" + startDateUK + "_" + endDateUK + ".csv";
