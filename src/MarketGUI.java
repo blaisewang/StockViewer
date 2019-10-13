@@ -344,7 +344,7 @@ public class MarketGUI extends Application {
     /**
      * Plotting task thread
      */
-    private class PlottingTask implements Runnable {
+    private static class PlottingTask implements Runnable {
 
         private String filePath;
 
